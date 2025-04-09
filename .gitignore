@@ -1,0 +1,84 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.cache/
+
+# Distribution / packaging
+.Python
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+.python-version
+
+# Assets
+.assets/
+.webassets-cache/
+
+# Installed packages (bower)
+bower_components
+
+# Development directories
+data/
+
+# Mac junk!
+.DS_Store
+
+# Local settings
+/settings.py
+
+# Scratch Files
+foo.*
+
+# Node Stahp plz
+/node_modules
+
+# Coverage
+.coverage
+htmlcov/
+
+# JetBrains (PyCharm) config
+.idea/*
+docker_crash_logs
+issues
+*.sublime-*
+*.xlsx
+
+# Vim project files
+.ropeproject
+
+# Temp files
+*.*~
+*.swp
+*.swp~
+*.pid
+*.log
+.ipynb_checkpoints
+
+# pytest cache
+.pytest_cache/*
+
+# robotframework
+robot/.idea
+robot/**/report.html
+robot/**/output.xml
+robot/log.html
+# local robotframework configuration file
+robot/config/robot.py
+log.html
+output.xml
+report.html
+selenium-screenshot-*.png
+
+# logs report
+logs/*
