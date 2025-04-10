@@ -1,3 +1,5 @@
+# lettuce/core.py
+
 import subprocess
 import time
 from lettuce.utils import load_yaml_config, expand_path
@@ -5,7 +7,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-def run_sync(config_path):
+def run_sync(config_path, as_root=False):
     config = load_yaml_config(config_path)
     source = expand_path(config.get("source", "."))
     target = config.get("target")
@@ -13,9 +15,19 @@ def run_sync(config_path):
     if not target:
         raise ValueError("Missing 'target' in config")
 
-    rsync_cmd = [
-        "rsync", "-avz", "--delete"
-    ]
+    # Ensure target directory exists (optional sudo)
+    if ":" in target:
+        user_host, remote_path = target.split(":", 1)
+        mkdir_cmd = f"{'sudo ' if as_root else ''}mkdir -p {remote_path}"
+        try:
+            subprocess.run(["ssh", user_host, mkdir_cmd], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Failed to create remote directory: {e}")
+            return
+
+    rsync_cmd = ["rsync", "-avz", "--delete"]
+    if as_root:
+        rsync_cmd.extend(["-e", "ssh", "--rsync-path=sudo rsync"])
 
     # Add ignore patterns
     for ignore in config.get("ignore", []):
@@ -30,25 +42,30 @@ def run_sync(config_path):
     rsync_cmd.extend([source + "/", target])
 
     print("Running:", " ".join(rsync_cmd))
-    subprocess.run(rsync_cmd, check=True)
+    try:
+        subprocess.run(rsync_cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ rsync failed: {e}")
+        return
 
 
 class LettuceEventHandler(FileSystemEventHandler):
-    def __init__(self, config_path):
+    def __init__(self, config_path, as_root=False):
         self.config_path = config_path
+        self.as_root = as_root
 
     def on_any_event(self, event):
         print("🔁 Change detected, syncing...")
         try:
-            run_sync(self.config_path)
+            run_sync(self.config_path, self.as_root)
         except Exception as e:
             print("❌ Sync failed:", e)
 
 
-def watch_sync(config_path):
+def watch_sync(config_path, as_root=False):
     config = load_yaml_config(config_path)
     source = expand_path(config.get("source", "."))
-    event_handler = LettuceEventHandler(config_path)
+    event_handler = LettuceEventHandler(config_path, as_root)
     observer = Observer()
     observer.schedule(event_handler, source, recursive=True)
     print(f"👀 Watching '{source}' for changes...")
