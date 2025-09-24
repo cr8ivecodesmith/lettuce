@@ -8,6 +8,13 @@ from watchdog.events import FileSystemEventHandler
 
 
 def run_sync(config_path, as_root=False):
+    """
+    Run rsync based on the provided configuration.
+
+    :param config_path: Path to the YAML configuration file.
+    :param as_root: Whether to run rsync with sudo.
+
+    """
     config = load_yaml_config(config_path)
     source = expand_path(config.get("source", "."))
     target = config.get("target")
@@ -50,6 +57,13 @@ def run_sync(config_path, as_root=False):
 
 
 class LettuceEventHandler(FileSystemEventHandler):
+    """
+    Event handler for filesystem changes to trigger rsync.
+
+    :param config_path: Path to the YAML configuration file.
+    :param as_root: Whether to run rsync with sudo.
+
+    """
     def __init__(self, config_path, as_root=False):
         self.config_path = config_path
         self.as_root = as_root
@@ -63,6 +77,13 @@ class LettuceEventHandler(FileSystemEventHandler):
 
 
 def watch_sync(config_path, as_root=False):
+    """
+    Watch the source directory for changes and sync on any event.
+
+    :param config_path: Path to the YAML configuration file.
+    :param as_root: Whether to run rsync with sudo.
+
+    """
     config = load_yaml_config(config_path)
     source = expand_path(config.get("source", "."))
     event_handler = LettuceEventHandler(config_path, as_root)
